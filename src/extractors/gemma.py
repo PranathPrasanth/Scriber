@@ -4,19 +4,16 @@ from pathlib import Path
 
 from openai import OpenAI
 
-from src.config import OPENROUTER_API_KEY
+from src.config import OPENAI_API_KEY
 from src.extractors.base import BaseExtractor
 from src.models import ExpenseData
 from src.prompts.receipt_extraction import RECEIPT_EXTRACTION_PROMPT
 
 
-class GemmaExtractor(BaseExtractor):
+class OpenAIExtractor(BaseExtractor):
 
     def __init__(self):
-        self.client = OpenAI(
-            api_key=OPENROUTER_API_KEY,
-            base_url="https://openrouter.ai/api/v1",
-        )
+        self.client = OpenAI(api_key=OPENAI_API_KEY)
 
     def extract(self, image_path: Path) -> ExpenseData:
 
@@ -29,16 +26,14 @@ class GemmaExtractor(BaseExtractor):
         }.get(suffix)
 
         if mime_type is None:
-            raise ValueError(
-                f"Unsupported image format: {suffix}"
-            )
+            raise ValueError(f"Unsupported image format: {suffix}")
 
         image_data = base64.b64encode(
             image_path.read_bytes()
-        ).decode()
+        ).decode("utf-8")
 
         response = self.client.responses.create(
-            model="google/gemma-4-26b-a4b-it:free",
+            model="gpt-4.1-mini",
 
             input=[
                 {
@@ -57,14 +52,19 @@ class GemmaExtractor(BaseExtractor):
             ],
         )
 
-        print("\n========== RESPONSE ==========")
-        print(response)
-        print("==============================")
+        text = response.output_text.strip()
 
-        print("\n====== OUTPUT TEXT ======")
-        print(repr(response.output_text))
-        print("=========================\n")
+        text = text.replace("```json", "")
+        text = text.replace("```", "")
+        text = text.strip()
 
-        data = json.loads(response.output_text)
+        data = json.loads(text)
+
+        data.setdefault("vendor", None)
+        data.setdefault("bill_number", None)
+        data.setdefault("date", None)
+        data.setdefault("amount", None)
+        data.setdefault("currency", "INR")
+        data.setdefault("gst", None)
 
         return ExpenseData.model_validate(data)
