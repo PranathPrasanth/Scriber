@@ -24,3 +24,11 @@ def ensure_directory(path: Path) -> None:
     """
 
     path.mkdir(parents=True, exist_ok=True)
+
+
+def output_json_path(output_dir: Path, image_path: Path) -> Path:
+    """
+    Returns the JSON output path corresponding to an image.
+    """
+
+    return output_dir / f"{image_path.stem}.json"
