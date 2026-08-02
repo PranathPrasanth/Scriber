@@ -5,6 +5,8 @@ from pathlib import Path
 
 from src.extractors.gemini import GeminiExtractor
 from src.extractors.gemma import GemmaExtractor
+from src.extractors.nemotron import NemotronExtractor
+
 from src.utils.file_utils import (
     ensure_directory,
     get_image_files,
@@ -22,6 +24,7 @@ def get_extractor(model_name: str):
     extractors = {
         "gemini": GeminiExtractor,
         "gemma": GemmaExtractor,
+        "nemotron": NemotronExtractor,
     }
 
     if model_name not in extractors:
@@ -42,7 +45,7 @@ def main():
     parser.add_argument(
         "--model",
         required=True,
-        choices=["gemini", "gemma",],
+        choices=["gemini", "gemma", "nemotron"],
         help="LLM provider to use",
     )
 

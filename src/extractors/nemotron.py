@@ -2,67 +2,75 @@ import base64
 import json
 from pathlib import Path
 
-import anthropic
+from openai import OpenAI
 
-from src.config import ANTHROPIC_API_KEY
+from src.config import OPENROUTER_API_KEY
 from src.extractors.base import BaseExtractor
 from src.models import ExpenseData
 from src.prompts.receipt_extraction import RECEIPT_EXTRACTION_PROMPT
 
 
-class ClaudeExtractor(BaseExtractor):
+class NemotronExtractor(BaseExtractor):
 
     def __init__(self):
-        self.client = anthropic.Anthropic(
-            api_key=ANTHROPIC_API_KEY
+        self.client = OpenAI(
+            api_key=OPENROUTER_API_KEY,
+            base_url="https://openrouter.ai/api/v1",
         )
 
     def extract(self, image_path: Path) -> ExpenseData:
 
         suffix = image_path.suffix.lower()
 
-        media_type = {
+        mime_type = {
             ".png": "image/png",
             ".jpg": "image/jpeg",
             ".jpeg": "image/jpeg",
         }.get(suffix)
 
-        if media_type is None:
+        if mime_type is None:
             raise ValueError(f"Unsupported image format: {suffix}")
 
         image_data = base64.b64encode(
             image_path.read_bytes()
         ).decode("utf-8")
 
-        response = self.client.messages.create(
-            model="claude-3-5-sonnet-latest",
+        response = self.client.responses.create(
+            model="nvidia/nemotron-nano-12b-v2-vl:free",
 
-            max_tokens=512,
-
-            temperature=0,
-
-            messages=[
+            input=[
                 {
                     "role": "user",
                     "content": [
                         {
-                            "type": "text",
+                            "type": "input_text",
                             "text": RECEIPT_EXTRACTION_PROMPT,
                         },
                         {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": media_type,
-                                "data": image_data,
-                            },
+                            "type": "input_image",
+                            "image_url": f"data:{mime_type};base64,{image_data}",
                         },
                     ],
                 }
             ],
         )
 
-        data = json.loads(response.content[0].text)
+        text = response.output_text.strip()
+
+        text = text.replace("```json", "")
+        text = text.replace("```", "")
+        text = text.strip()
+
+        # Find JSON if the model adds extra text
+        start = text.find("{")
+        end = text.rfind("}")
+
+        if start == -1 or end == -1:
+            raise ValueError(f"Model did not return JSON:\n\n{text}")
+
+        text = text[start:end + 1]
+
+        data = json.loads(text)
 
         data.setdefault("vendor", None)
         data.setdefault("bill_number", None)
