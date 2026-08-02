@@ -1,5 +1,5 @@
-import json
 import base64
+import json
 from pathlib import Path
 
 import anthropic
@@ -30,14 +30,17 @@ class ClaudeExtractor(BaseExtractor):
         if media_type is None:
             raise ValueError(f"Unsupported image format: {suffix}")
 
-        image_b64 = base64.b64encode(
+        image_data = base64.b64encode(
             image_path.read_bytes()
         ).decode("utf-8")
 
         response = self.client.messages.create(
             model="claude-3-5-sonnet-latest",
+
             max_tokens=512,
+
             temperature=0,
+
             messages=[
                 {
                     "role": "user",
@@ -51,7 +54,7 @@ class ClaudeExtractor(BaseExtractor):
                             "source": {
                                 "type": "base64",
                                 "media_type": media_type,
-                                "data": image_b64,
+                                "data": image_data,
                             },
                         },
                     ],

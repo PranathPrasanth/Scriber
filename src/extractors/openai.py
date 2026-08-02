@@ -1,5 +1,5 @@
-import json
 import base64
+import json
 from pathlib import Path
 
 from openai import OpenAI
@@ -28,10 +28,13 @@ class OpenAIExtractor(BaseExtractor):
         if mime_type is None:
             raise ValueError(f"Unsupported image format: {suffix}")
 
-        image_b64 = base64.b64encode(image_path.read_bytes()).decode("utf-8")
+        image_data = base64.b64encode(
+            image_path.read_bytes()
+        ).decode("utf-8")
 
         response = self.client.responses.create(
             model="gpt-4.1-mini",
+
             input=[
                 {
                     "role": "user",
@@ -42,7 +45,7 @@ class OpenAIExtractor(BaseExtractor):
                         },
                         {
                             "type": "input_image",
-                            "image_url": f"data:{mime_type};base64,{image_b64}",
+                            "image_url": f"data:{mime_type};base64,{image_data}",
                         },
                     ],
                 }
