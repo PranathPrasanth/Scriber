@@ -1,59 +1,22 @@
-# Scriber: Multimodal AI for Handwritten Receipt Intelligence
+# Scriber
 
-> **AI-Powered Handwritten Expense Intelligence using Multimodal Large Language Models**
-
-Scriber is an intelligent document understanding system that extracts structured expense information from handwritten bills and receipts using state-of-the-art multimodal Large Language Models (LLMs). It benchmarks multiple vision-capable models based on extraction accuracy and API cost, and demonstrates end-to-end expense automation through Zoho Books integration.
+An AI-powered handwritten receipt extraction system that automatically extracts structured expense information from receipt images using multiple Vision Language Models (VLMs), evaluates extraction accuracy against ground truth, and records validated expenses into Zoho Books.
 
 ---
 
-## ✨ Features
+## Features
 
-- 📄 Handwritten bill & receipt understanding
-- 🤖 Supports multiple multimodal LLMs
-  - Google Gemini
-  - OpenAI GPT
-  - Anthropic Claude
-- 📊 Automated evaluation framework
-- 🎯 Field-wise accuracy comparison
-- 💰 Cost analysis per model
-- 📚 Ground-truth based benchmarking
-- 🧾 Automatic expense creation using Zoho Books API
-- 📈 Clean reports for model comparison
-
----
-
-## Problem Statement
-
-Handwritten receipts remain one of the most challenging document understanding problems due to varying handwriting styles, layouts, lighting conditions, and paper quality.
-
-Scriber evaluates modern multimodal LLMs to answer two key questions:
-
-- Which model extracts handwritten expense information most accurately?
-- Is the improvement in accuracy worth the additional API cost?
-
----
-
-## Project Workflow
-
-```
-            Handwritten Bill
-                    │
-                    ▼
-        Multimodal Vision LLM
-     (Gemini / GPT / Claude)
-                    │
-                    ▼
-        Structured JSON Output
-                    │
-                    ▼
-      Ground Truth Comparison
-                    │
-                    ▼
-      Accuracy & Cost Analysis
-                    │
-                    ▼
-        Zoho Books Integration
-```
+- Extracts handwritten receipt information from images
+- Supports multiple Vision Language Models:
+  - Gemini 2.5 Flash
+  - Google Gemma (via OpenRouter)
+  - NVIDIA Nemotron Nano VL (via OpenRouter)
+- Automatic batch processing
+- Ground truth evaluation
+- Accuracy report generation
+- Zoho Books integration
+- Retry mechanism for transient API failures
+- Modular architecture for adding new models
 
 ---
 
@@ -61,126 +24,112 @@ Scriber evaluates modern multimodal LLMs to answer two key questions:
 
 ```
 Scriber/
-
+│
 ├── bills/
-│   ├── images/
-│   └── redacted/
+│   └── images/
 │
 ├── ground_truth/
 │
 ├── outputs/
 │   ├── gemini/
-│   ├── openai/
-│   └── claude/
+│   ├── gemma/
+│   └── nemotron/
 │
 ├── reports/
+│   └── evaluation.txt
 │
 ├── src/
-│   ├── extractors/
 │   ├── evaluation/
-│   ├── zoho/
+│   ├── extractors/
+│   ├── prompts/
 │   ├── utils/
-│   └── main.py
+│   ├── zoho/
+│   ├── config.py
+│   ├── main.py
+│   └── models.py
 │
-├── .env.example
 ├── requirements.txt
+├── .env.example
 └── README.md
 ```
 
 ---
 
-## Technologies
+# Models Used
 
-- Python
-- Google Gemini API
-- OpenAI API
-- Anthropic Claude API
-- Zoho Books API
-- Pandas
-- RapidFuzz
-- Requests
+| Model | Provider |
+|--------|----------|
+| Gemini 2.5 Flash | Google AI Studio |
+| Gemma 4 27B | OpenRouter |
+| Nemotron Nano VL | OpenRouter |
 
 ---
 
-## Evaluation Methodology
+# Extracted Fields
 
-Each handwritten bill is manually annotated to create a ground-truth dataset.
+The system extracts the following fields:
 
-Every model extracts:
-
-- Vendor Name
+- Vendor
 - Bill Number
 - Date
 - Amount
 - Currency
-- GST / Tax Information
+- GST
 
-The extracted fields are compared against the ground truth to compute:
-
-- Field-wise Accuracy
-- Overall Accuracy
-- API Cost
-- Cost per 100 Bills
-
-The final recommendation is based on both extraction quality and operational cost.
-
----
-
-## Sample Output
+Example Output
 
 ```json
 {
-  "vendor": "ABC Medicals",
-  "bill_number": "1432",
-  "date": "2026-07-31",
-  "amount": 99.00,
-  "currency": "INR",
-  "gst": "5%"
+    "vendor": "Sai Auto Parts",
+    "bill_number": "620",
+    "date": "2026-07-29",
+    "amount": 424.80,
+    "currency": "INR",
+    "gst": "18%"
 }
 ```
 
 ---
 
-## Future Improvements
+# Installation
 
-- Web interface for receipt upload
-- Batch receipt processing
-- OCR + LLM hybrid pipeline
-- Confidence scoring
-- Human-in-the-loop verification
-- Support for multilingual handwritten receipts
-- Analytics dashboard
-
----
-
-## Installation
+Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/Scriber.git
-
+git clone <repository-url>
 cd Scriber
+```
 
+Create virtual environment
+
+```bash
 python -m venv .venv
+```
 
-source .venv/bin/activate
-# Windows
-# .venv\Scripts\activate
+Activate
 
+Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
 ---
 
-## Environment Variables
+# Environment Variables
 
-Create a `.env` file using `.env.example`.
+Create a `.env` file.
 
 ```
-OPENAI_API_KEY=
-
 GEMINI_API_KEY=
 
-ANTHROPIC_API_KEY=
+OPENROUTER_API_KEY=
 
 ZOHO_CLIENT_ID=
 
@@ -189,24 +138,138 @@ ZOHO_CLIENT_SECRET=
 ZOHO_REFRESH_TOKEN=
 
 ZOHO_ORGANIZATION_ID=
+
+ZOHO_EXPENSE_ACCOUNT_ID=
 ```
 
 ---
 
-## Disclaimer
+# Running Extraction
 
-This project is intended for research and evaluation purposes. Any handwritten receipts used for testing should have personally identifiable information redacted before being processed by external AI services.
+## Gemini
+
+```bash
+python -m src.main --model gemini
+```
+
+## Gemma
+
+```bash
+python -m src.main --model gemma
+```
+
+## Nemotron
+
+```bash
+python -m src.main --model nemotron
+```
+
+The extracted JSON files are stored inside
+
+```
+outputs/
+```
 
 ---
 
-## License
+# Evaluation
 
-MIT License
+Compare extracted outputs against ground truth.
+
+```bash
+python -m src.evaluation.evaluator
+```
+
+Evaluation report is generated at
+
+```
+reports/evaluation.txt
+```
+
+Example
+
+```
+Gemini
+
+Overall Accuracy : 100%
+Success Rate : 100%
+
+Gemma
+
+Overall Accuracy : 100%
+Success Rate : 100%
+
+Nemotron
+
+Overall Accuracy : 96.67%
+Success Rate : 33.33%
+```
 
 ---
 
-## Author
+# Zoho Books Integration
 
-**Pranath Prasanth**
+The project supports automatic expense creation in Zoho Books.
 
-Built as an exploration of multimodal AI for intelligent document understanding and automated expense processing.
+Workflow
+
+1. Extract receipt
+2. Convert to structured JSON
+3. Validate extracted fields
+4. Create expense in Zoho Books using OAuth 2.0
+5. Store expense in the configured expense account
+
+---
+
+# Technologies Used
+
+- Python
+- Google Gemini API
+- OpenRouter API
+- Pydantic
+- Requests
+- python-dotenv
+- Zoho Books API
+
+---
+
+# Error Handling
+
+The application automatically retries on
+
+- API rate limits
+- Temporary network failures
+- Connection timeout
+- Resource exhaustion
+
+Already processed receipts are skipped automatically.
+
+---
+
+# Results
+
+| Model | Accuracy |
+|--------|----------|
+| Gemini | 100% |
+| Gemma | 100% |
+| Nemotron | 96.67% |
+
+---
+
+# Future Improvements
+
+- OCR-free document understanding
+- Automatic expense categorization
+- Support additional VLMs
+- Receipt image enhancement
+- Web dashboard
+- Docker deployment
+- Multi-language receipt support
+
+---
+
+# Author
+
+Pranath Prasanth
+
+B.Tech Computer Science & Engineering
