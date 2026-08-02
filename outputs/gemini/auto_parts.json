@@ -1,9 +1,8 @@
 {
     "vendor": "SAI AUTO PARTS",
     "bill_number": "620",
-    "date": "29/07/26",
+    "date": "2026-07-29",
     "amount": 424.8,
     "currency": "INR",
-    "gst_rate": null,
-    "gst_amount": null
+    "gst": "18%"
 }
