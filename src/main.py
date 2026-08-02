@@ -1,35 +1,70 @@
+import argparse
 import json
 import time
 from pathlib import Path
 
+from src.extractors.claude import ClaudeExtractor
 from src.extractors.gemini import GeminiExtractor
+from src.extractors.openai import OpenAIExtractor
 from src.utils.file_utils import (
-    get_image_files,
     ensure_directory,
+    get_image_files,
     output_json_path,
 )
 
 IMAGE_DIR = Path("bills/images")
-OUTPUT_DIR = Path("outputs/gemini")
+OUTPUT_ROOT = Path("outputs")
 
 MAX_RETRIES = 3
 
 
+def get_extractor(model_name: str):
+
+    extractors = {
+        "gemini": GeminiExtractor,
+        "openai": OpenAIExtractor,
+        "claude": ClaudeExtractor,
+    }
+
+    if model_name not in extractors:
+        raise ValueError(
+            f"Unsupported model '{model_name}'. "
+            f"Choose from: {', '.join(extractors.keys())}"
+        )
+
+    return extractors[model_name]()
+
+
 def main():
 
-    ensure_directory(OUTPUT_DIR)
+    parser = argparse.ArgumentParser(
+        description="Extract handwritten receipt information using an LLM."
+    )
 
-    extractor = GeminiExtractor()
+    parser.add_argument(
+        "--model",
+        required=True,
+        choices=["gemini", "openai", "claude"],
+        help="LLM provider to use",
+    )
+
+    args = parser.parse_args()
+
+    output_dir = OUTPUT_ROOT / args.model
+
+    ensure_directory(output_dir)
+
+    extractor = get_extractor(args.model)
 
     images = get_image_files(IMAGE_DIR)
 
+    print(f"\nUsing: {args.model.upper()}")
     print(f"Found {len(images)} image(s).\n")
 
     for image in images:
 
-        output_file = output_json_path(OUTPUT_DIR, image)
+        output_file = output_json_path(output_dir, image)
 
-        # Skip files already processed
         if output_file.exists():
             print(f"⏭ Skipping {image.name}")
             continue
@@ -57,25 +92,27 @@ def main():
 
                 error = str(e)
 
-                # Retry only for transient failures
-                if (
-                    "429" in error
-                    or "RESOURCE_EXHAUSTED" in error
-                    or "getaddrinfo failed" in error
-                    or "Connection" in error
-                    or "Timeout" in error
-                ):
+                transient_error = any(
+                    keyword in error
+                    for keyword in (
+                        "429",
+                        "RESOURCE_EXHAUSTED",
+                        "getaddrinfo failed",
+                        "Connection",
+                        "Timeout",
+                    )
+                )
 
-                    if attempt < MAX_RETRIES - 1:
+                if transient_error and attempt < MAX_RETRIES - 1:
 
-                        wait = 5 * (attempt + 1)
+                    wait = 5 * (attempt + 1)
 
-                        print(
-                            f"Temporary error. Retrying in {wait} seconds..."
-                        )
+                    print(
+                        f"Temporary error. Retrying in {wait} seconds..."
+                    )
 
-                        time.sleep(wait)
-                        continue
+                    time.sleep(wait)
+                    continue
 
                 print(f"✗ Failed: {image.name}")
                 print(error)
