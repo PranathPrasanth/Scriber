@@ -57,10 +57,18 @@ class GemmaExtractor(BaseExtractor):
 
         text = response.output_text.strip()
 
-        # Remove markdown code fences if the model returns them
         text = text.replace("```json", "")
         text = text.replace("```", "")
         text = text.strip()
+
+        # Find JSON if the model adds extra text
+        start = text.find("{")
+        end = text.rfind("}")
+
+        if start == -1 or end == -1:
+            raise ValueError(f"Model did not return JSON:\n\n{text}")
+
+        text = text[start:end + 1]
 
         data = json.loads(text)
 
