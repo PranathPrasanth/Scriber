@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from src.extractors.gemini import GeminiExtractor
-from extractors.gemma import GemmaExtractor
+from src.extractors.gemma import GemmaExtractor
 from src.utils.file_utils import (
     ensure_directory,
     get_image_files,
