@@ -34,7 +34,7 @@ export function SiteHeader() {
             </Link>
           ))}
           <a
-            href="https://github.com"
+            href="https://github.com/PranathPrasanth/Scriber"
             target="_blank"
             rel="noreferrer"
             className="ml-1 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
