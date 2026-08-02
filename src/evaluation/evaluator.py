@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+REPORT_DIR = Path("reports")
+REPORT_DIR.mkdir(exist_ok=True)
+
 GROUND_TRUTH_DIR = Path("ground_truth")
 
 OUTPUTS = {
@@ -17,6 +20,8 @@ FIELDS = [
     "currency",
     "gst",
 ]
+
+TOTAL_BILLS = len(list(GROUND_TRUTH_DIR.glob("*.json")))
 
 
 def normalize(value):
@@ -35,19 +40,22 @@ def compare(gt, pred):
     scores = {}
 
     for field in FIELDS:
-
         gt_val = normalize(gt.get(field))
         pred_val = normalize(pred.get(field))
-
         scores[field] = int(gt_val == pred_val)
 
     return scores
 
 
+def log(message):
+
+    print(message)
+    print(message, file=report)
+
+
 def evaluate_model(model_name, output_dir):
 
     totals = {field: 0 for field in FIELDS}
-
     total_bills = 0
 
     for gt_file in sorted(GROUND_TRUTH_DIR.glob("*.json")):
@@ -70,31 +78,59 @@ def evaluate_model(model_name, output_dir):
 
         total_bills += 1
 
-    print("\n" + "=" * 60)
-    print(model_name)
-    print("=" * 60)
+    log("")
+    log("=" * 60)
+    log(model_name)
+    log("=" * 60)
 
     overall_correct = 0
 
     for field in FIELDS:
 
-        accuracy = totals[field] / total_bills * 100
+        accuracy = (
+            totals[field] / total_bills * 100
+            if total_bills
+            else 0
+        )
 
         overall_correct += totals[field]
 
-        print(f"{field:15s}: {accuracy:.2f}%")
+        log(f"{field:15s}: {accuracy:.2f}%")
 
-    overall = overall_correct / (len(FIELDS) * total_bills) * 100
+    overall = (
+        overall_correct / (len(FIELDS) * total_bills) * 100
+        if total_bills
+        else 0
+    )
 
-    print("-" * 60)
-    print(f"Overall Accuracy : {overall:.2f}%")
-    print(f"Bills Evaluated  : {total_bills}")
+    success_rate = (
+        total_bills / TOTAL_BILLS * 100
+        if TOTAL_BILLS
+        else 0
+    )
+
+    log("-" * 60)
+    log(f"Overall Accuracy : {overall:.2f}%")
+    log(f"Bills Evaluated  : {total_bills}/{TOTAL_BILLS}")
+    log(f"Success Rate     : {success_rate:.2f}%")
 
 
 def main():
 
+    global report
+
+    report = open(
+        REPORT_DIR / "evaluation.txt",
+        "w",
+        encoding="utf-8",
+    )
+
     for model, folder in OUTPUTS.items():
         evaluate_model(model, folder)
+
+    report.close()
+
+    print("\nEvaluation report saved to reports/evaluation.txt")
 
 
 if __name__ == "__main__":
