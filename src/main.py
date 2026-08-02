@@ -3,9 +3,8 @@ import json
 import time
 from pathlib import Path
 
-from src.extractors.claude import ClaudeExtractor
 from src.extractors.gemini import GeminiExtractor
-from src.extractors.openai import OpenAIExtractor
+from extractors.gemma import GemmaExtractor
 from src.utils.file_utils import (
     ensure_directory,
     get_image_files,
@@ -22,8 +21,7 @@ def get_extractor(model_name: str):
 
     extractors = {
         "gemini": GeminiExtractor,
-        "openai": OpenAIExtractor,
-        "claude": ClaudeExtractor,
+        "gemma": GemmaExtractor,
     }
 
     if model_name not in extractors:
@@ -44,7 +42,7 @@ def main():
     parser.add_argument(
         "--model",
         required=True,
-        choices=["gemini", "openai", "claude"],
+        choices=["gemini", "gemma",],
         help="LLM provider to use",
     )
 

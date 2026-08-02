@@ -4,16 +4,19 @@ from pathlib import Path
 
 from openai import OpenAI
 
-from src.config import OPENAI_API_KEY
+from src.config import OPENROUTER_API_KEY
 from src.extractors.base import BaseExtractor
 from src.models import ExpenseData
 from src.prompts.receipt_extraction import RECEIPT_EXTRACTION_PROMPT
 
 
-class OpenAIExtractor(BaseExtractor):
+class GemmaExtractor(BaseExtractor):
 
     def __init__(self):
-        self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.client = OpenAI(
+            api_key=OPENROUTER_API_KEY,
+            base_url="https://openrouter.ai/api/v1",
+        )
 
     def extract(self, image_path: Path) -> ExpenseData:
 
@@ -26,14 +29,16 @@ class OpenAIExtractor(BaseExtractor):
         }.get(suffix)
 
         if mime_type is None:
-            raise ValueError(f"Unsupported image format: {suffix}")
+            raise ValueError(
+                f"Unsupported image format: {suffix}"
+            )
 
         image_data = base64.b64encode(
             image_path.read_bytes()
-        ).decode("utf-8")
+        ).decode()
 
         response = self.client.responses.create(
-            model="gpt-4.1-mini",
+            model="google/gemma-4-26b-a4b-it:free",
 
             input=[
                 {
@@ -53,12 +58,5 @@ class OpenAIExtractor(BaseExtractor):
         )
 
         data = json.loads(response.output_text)
-
-        data.setdefault("vendor", None)
-        data.setdefault("bill_number", None)
-        data.setdefault("date", None)
-        data.setdefault("amount", None)
-        data.setdefault("currency", "INR")
-        data.setdefault("gst", None)
 
         return ExpenseData.model_validate(data)
