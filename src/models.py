@@ -8,5 +8,4 @@ class ExpenseData(BaseModel):
     date: Optional[str] = None
     amount: Optional[float] = None
     currency: Optional[str] = "INR"
-    gst_rate: Optional[str] = None
-    gst_amount: Optional[float] = None
+    gst: Optional[str] = None
