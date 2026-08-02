@@ -57,6 +57,14 @@ class GemmaExtractor(BaseExtractor):
             ],
         )
 
+        print("\n========== RESPONSE ==========")
+        print(response)
+        print("==============================")
+
+        print("\n====== OUTPUT TEXT ======")
+        print(repr(response.output_text))
+        print("=========================\n")
+
         data = json.loads(response.output_text)
 
         return ExpenseData.model_validate(data)
