@@ -1,4 +1,3 @@
-print("MAIN FILE STARTED")
 import json
 from pathlib import Path
 
@@ -8,6 +7,7 @@ from src.utils.file_utils import (
     ensure_directory,
     output_json_path,
 )
+import time
 
 IMAGE_DIR = Path("bills/images")
 OUTPUT_DIR = Path("outputs/gemini")
@@ -23,7 +23,7 @@ def main():
 
     print(f"Found {len(images)} image(s).\n")
 
-    for image in images[:1]: # Process only the first image for now
+    for image in images:
 
         print(f"Processing {image.name}...")
 
@@ -35,7 +35,7 @@ def main():
 
             with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(
-                    expense.model_dump(),
+                    expense.model_dump(exclude_none=False),
                     f,
                     indent=4,
                     ensure_ascii=False
@@ -43,9 +43,12 @@ def main():
 
             print("✓ Success")
 
+            time.sleep(15)
+
         except Exception as e:
 
-            print(f"✗ Failed : {e}")
+            print(f"✗ Failed : {image.name}")
+            print(e)
 
     print("\nFinished.")
     

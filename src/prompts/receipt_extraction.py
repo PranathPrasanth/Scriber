@@ -1,25 +1,29 @@
 RECEIPT_EXTRACTION_PROMPT = """
 You are an expert document understanding assistant.
 
-Your task is to extract structured expense information from a handwritten receipt.
+Extract structured information from this handwritten bill.
 
-Extract ONLY the following fields:
+Return ONLY valid JSON.
 
-- vendor
-- bill_number
-- date
-- amount
-- currency
-- gst
+Schema:
+
+{
+    "vendor": string | null,
+    "bill_number": string | null,
+    "date": string | null,
+    "amount": number | null,
+    "currency": string | null,
+    "gst": string | null
+}
 
 Rules:
 
-1. Return only valid JSON.
-2. If a field is absent, return null.
-3. Do not guess values.
-4. Amount must be numeric.
-5. Currency defaults to "INR" unless another currency is explicitly written.
-6. Preserve the receipt date exactly as written. Do not reformat it.
-7. Do not include markdown.
-8. Do not explain your answer.
+1. Extract only what is explicitly present.
+2. Do not guess missing values.
+3. Currency defaults to "INR".
+4. Return GST percentage only (examples: "5%", "12%", "18%").
+5. If GST percentage is not written, return null.
+6. Return the date in ISO format YYYY-MM-DD whenever it can be determined.
+7. Amount must be numeric.
+8. Return ONLY JSON.
 """

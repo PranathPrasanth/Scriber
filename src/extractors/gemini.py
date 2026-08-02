@@ -47,4 +47,11 @@ class GeminiExtractor(BaseExtractor):
 
         data = json.loads(response.text)
 
+        data.setdefault("vendor", None)
+        data.setdefault("bill_number", None)
+        data.setdefault("date", None)
+        data.setdefault("amount", None)
+        data.setdefault("currency", "INR")
+        data.setdefault("gst", None)
+
         return ExpenseData.model_validate(data)
