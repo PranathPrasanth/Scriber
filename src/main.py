@@ -23,7 +23,7 @@ def main():
 
     print(f"Found {len(images)} image(s).\n")
 
-    for image in images:
+    for image in images[:1]: # Process only the first image for now
 
         print(f"Processing {image.name}...")
 

@@ -29,7 +29,7 @@ class GeminiExtractor(BaseExtractor):
             raise ValueError(f"Unsupported image format: {suffix}")
 
         response = self.client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-flash-latest",
 
             contents=[
                 RECEIPT_EXTRACTION_PROMPT,
