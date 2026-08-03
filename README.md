@@ -1,42 +1,118 @@
 # Scriber
 
-An AI-powered handwritten receipt extraction system that automatically extracts structured expense information from receipt images using multiple Vision Language Models (VLMs), evaluates extraction accuracy against ground truth, and records validated expenses into Zoho Books.
+> AI-powered handwritten receipt extraction using Vision Language Models with automatic Zoho Books integration.
+
+![Python](https://img.shields.io/badge/Python-3.13-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Production-green)
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)
+![Vercel](https://img.shields.io/badge/Frontend-Vercel-black)
+![Render](https://img.shields.io/badge/Backend-Render-7E57C2)
+
+---
+
+## 🚀 Live Demo
+
+**Frontend**
+
+https://scriber-omega.vercel.app
+
+**Backend API**
+
+https://scriber-5mvl.onrender.com
+
+**API Documentation**
+
+https://scriber-5mvl.onrender.com/docs
+
+---
+
+## Overview
+
+Scriber is a full-stack AI application that extracts structured expense information from handwritten receipts using multiple Vision Language Models (VLMs), compares model performance, and automatically creates expenses inside Zoho Books.
+
+Unlike traditional OCR pipelines, Scriber leverages modern Vision Language Models for end-to-end document understanding.
 
 ---
 
 ## Features
 
-- Extracts handwritten receipt information from images
-- Supports multiple Vision Language Models:
+- AI-powered handwritten receipt extraction
+- Multiple Vision Language Models
   - Gemini 2.5 Flash
-  - Google Gemma (via OpenRouter)
-  - NVIDIA Nemotron Nano VL (via OpenRouter)
-- Automatic batch processing
-- Ground truth evaluation
-- Accuracy report generation
-- Zoho Books integration
+  - Google Gemma
+  - NVIDIA Nemotron Nano VL
+- Modern React dashboard
+- Automatic expense creation in Zoho Books
+- Model evaluation dashboard
+- Accuracy comparison between VLMs
+- Batch receipt processing
 - Retry mechanism for transient API failures
-- Modular architecture for adding new models
+- Production deployment
+- REST API with FastAPI
 
 ---
 
-## Project Structure
+## Screenshots
+
+> Add screenshots here after deployment.
+
+### Landing Page
+
+```
+docs/images/home.png
+```
+
+### Dashboard
+
+```
+docs/images/dashboard.png
+```
+
+### Zoho Books Integration
+
+```
+docs/images/zoho.png
+```
+
+---
+
+# Architecture
+
+```
+                React Frontend
+               (TanStack Start)
+                      │
+                      ▼
+               FastAPI Backend
+                      │
+        ┌─────────────┼─────────────┐
+        ▼             ▼             ▼
+    Gemini         Gemma       Nemotron
+        │             │             │
+        └─────────────┼─────────────┘
+                      │
+                      ▼
+             Structured Expense Data
+                      │
+                      ▼
+               Zoho Books API
+```
+
+---
+
+# Project Structure
 
 ```
 Scriber/
+
+├── frontend/
 │
 ├── bills/
-│   └── images/
-│
-├── ground_truth/
 │
 ├── outputs/
-│   ├── gemini/
-│   ├── gemma/
-│   └── nemotron/
 │
 ├── reports/
-│   └── evaluation.txt
 │
 ├── src/
 │   ├── evaluation/
@@ -44,6 +120,7 @@ Scriber/
 │   ├── prompts/
 │   ├── utils/
 │   ├── zoho/
+│   ├── api.py
 │   ├── config.py
 │   ├── main.py
 │   └── models.py
@@ -55,10 +132,10 @@ Scriber/
 
 ---
 
-# Models Used
+# Models
 
 | Model | Provider |
-|--------|----------|
+|---------|----------|
 | Gemini 2.5 Flash | Google AI Studio |
 | Gemma 4 27B | OpenRouter |
 | Nemotron Nano VL | OpenRouter |
@@ -67,8 +144,6 @@ Scriber/
 
 # Extracted Fields
 
-The system extracts the following fields:
-
 - Vendor
 - Bill Number
 - Date
@@ -76,7 +151,7 @@ The system extracts the following fields:
 - Currency
 - GST
 
-Example Output
+Example
 
 ```json
 {
@@ -91,12 +166,45 @@ Example Output
 
 ---
 
-# Installation
+# Tech Stack
 
-Clone the repository
+### Frontend
+
+- React 19
+- TypeScript
+- TanStack Start
+- Tailwind CSS
+
+### Backend
+
+- FastAPI
+- Python
+- Pydantic
+- Requests
+
+### AI
+
+- Gemini API
+- OpenRouter
+- Gemma
+- Nemotron
+
+### Deployment
+
+- Vercel
+- Render
+
+### Accounting
+
+- Zoho Books API
+
+---
+
+# Installation
 
 ```bash
 git clone <repository-url>
+
 cd Scriber
 ```
 
@@ -114,19 +222,35 @@ Windows
 .venv\Scripts\activate
 ```
 
-Install dependencies
+Install
 
 ```bash
 pip install -r requirements.txt
+```
+
+Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+Backend
+
+```bash
+python -m uvicorn src.api:app --reload
 ```
 
 ---
 
 # Environment Variables
 
-Create a `.env` file.
+Backend
 
-```
+```env
 GEMINI_API_KEY=
 
 OPENROUTER_API_KEY=
@@ -142,134 +266,62 @@ ZOHO_ORGANIZATION_ID=
 ZOHO_EXPENSE_ACCOUNT_ID=
 ```
 
----
+Frontend
 
-# Running Extraction
-
-## Gemini
-
-```bash
-python -m src.main --model gemini
-```
-
-## Gemma
-
-```bash
-python -m src.main --model gemma
-```
-
-## Nemotron
-
-```bash
-python -m src.main --model nemotron
-```
-
-The extracted JSON files are stored inside
-
-```
-outputs/
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
 ---
 
-# Evaluation
+# REST API
 
-Compare extracted outputs against ground truth.
-
-```bash
-python -m src.evaluation.evaluator
-```
-
-Evaluation report is generated at
-
-```
-reports/evaluation.txt
-```
-
-Example
-
-```
-Gemini
-
-Overall Accuracy : 100%
-Success Rate : 100%
-
-Gemma
-
-Overall Accuracy : 100%
-Success Rate : 100%
-
-Nemotron
-
-Overall Accuracy : 96.67%
-Success Rate : 33.33%
-```
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/extract` | Extract receipt |
+| POST | `/zoho/expenses` | Create expense |
+| GET | `/evaluation` | Model evaluation |
+| GET | `/docs` | Swagger UI |
 
 ---
 
-# Zoho Books Integration
-
-The project supports automatic expense creation in Zoho Books.
-
-Workflow
-
-1. Extract receipt
-2. Convert to structured JSON
-3. Validate extracted fields
-4. Create expense in Zoho Books using OAuth 2.0
-5. Store expense in the configured expense account
-
----
-
-# Technologies Used
-
-- Python
-- Google Gemini API
-- OpenRouter API
-- Pydantic
-- Requests
-- python-dotenv
-- Zoho Books API
-
----
-
-# Error Handling
-
-The application automatically retries on
-
-- API rate limits
-- Temporary network failures
-- Connection timeout
-- Resource exhaustion
-
-Already processed receipts are skipped automatically.
-
----
-
-# Results
+# Evaluation Results
 
 | Model | Accuracy |
-|--------|----------|
+|---------|-----------|
 | Gemini | 100% |
 | Gemma | 100% |
 | Nemotron | 96.67% |
 
 ---
 
+# Error Handling
+
+Automatically retries on
+
+- API rate limits
+- Connection failures
+- Resource exhaustion
+- Temporary network failures
+
+Previously processed receipts are skipped automatically.
+
+---
+
 # Future Improvements
 
-- OCR-free document understanding
+- Docker support
+- User authentication
+- Expense analytics
 - Automatic expense categorization
-- Support additional VLMs
-- Receipt image enhancement
-- Web dashboard
-- Docker deployment
-- Multi-language receipt support
+- Receipt enhancement
+- Multi-language receipts
+- Additional Vision Language Models
 
 ---
 
 # Author
 
-Pranath Prasanth
+**Pranath Prasanth**
 
 B.Tech Computer Science & Engineering
