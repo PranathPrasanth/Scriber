@@ -17,41 +17,72 @@ export interface ModelAccuracy {
   success_rate: number;
 }
 
-const API_BASE = import.meta.env["VITE_API_BASE_URL"] ?? "http://localhost:8000";
+const API_BASE =
+  import.meta.env["VITE_API_BASE_URL"] ?? "http://localhost:8000";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, init);
-  if (!res.ok) throw new Error(`Request failed [${res.status}]: ${await res.text()}`);
+
+  if (!res.ok) {
+    throw new Error(
+      `Request failed [${res.status}]: ${await res.text()}`
+    );
+  }
+
   return (await res.json()) as T;
 }
 
-/** POST /extract — multipart form with the receipt image + chosen model. */
-export async function extractReceipt(file: File, model: ModelId): Promise<ExtractionResult> {
+/** POST /extract */
+export async function extractReceipt(
+  file: File,
+  model: ModelId
+): Promise<ExtractionResult> {
+
   const form = new FormData();
+
   form.append("file", file);
   form.append("model", model);
+
   try {
-    return await request<ExtractionResult>("/extract", { method: "POST", body: form });
-  } } catch (err) {
-      throw err;
+    return await request<ExtractionResult>(
+      "/extract",
+      {
+        method: "POST",
+        body: form,
       }
+    );
+  } catch (err) {
+    throw err;
+  }
+}
 
-/** POST /zoho/expenses — creates the expense in Zoho Books. */
-export async function createZohoExpense(data: ExtractionResult): Promise<{ expense_id: string }> {
+/** POST /zoho/expenses */
+export async function createZohoExpense(
+  data: ExtractionResult
+): Promise<{ expense_id: string }> {
+
   try {
-    return await request<{ expense_id: string }>("/zoho/expenses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-  } } catch (err) {
-      throw err;
-    }
+    return await request<{ expense_id: string }>(
+      "/zoho/expenses",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
+  } catch (err) {
+    throw err;
+  }
+}
 
-/** GET /evaluation — per-model accuracy metrics. */
+/** GET /evaluation */
 export async function fetchEvaluation(): Promise<ModelAccuracy[]> {
+
   try {
     return await request<ModelAccuracy[]>("/evaluation");
-  } } catch (err) {
-      throw err;
-    }
+  } catch (err) {
+    throw err;
+  }
+}
