@@ -1,12 +1,12 @@
 export type ModelId = "gemini" | "gemma" | "nemotron";
 
 export interface ExtractionResult {
-  vendor: string;
-  bill_number: string;
-  date: string;
-  amount: number;
-  currency: string;
-  gst: number;
+  vendor: string | null;
+  bill_number: string | null;
+  date: string | null;
+  amount: number | null;
+  currency: string | null;
+  gst: string | null;
 }
 
 export interface ModelAccuracy {
@@ -18,7 +18,7 @@ export interface ModelAccuracy {
 }
 
 const API_BASE =
-  import.meta.env["VITE_API_BASE_URL"] ?? "http://localhost:8000";
+  import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, init);
@@ -32,57 +32,34 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-/** POST /extract */
 export async function extractReceipt(
   file: File,
   model: ModelId
 ): Promise<ExtractionResult> {
 
   const form = new FormData();
-
   form.append("file", file);
   form.append("model", model);
 
-  try {
-    return await request<ExtractionResult>(
-      "/extract",
-      {
-        method: "POST",
-        body: form,
-      }
-    );
-  } catch (err) {
-    throw err;
-  }
+  return request<ExtractionResult>("/extract", {
+    method: "POST",
+    body: form,
+  });
 }
 
-/** POST /zoho/expenses */
 export async function createZohoExpense(
   data: ExtractionResult
-): Promise<{ expense_id: string }> {
+): Promise<{ success: boolean; expense_id: string; message: string }> {
 
-  try {
-    return await request<{ expense_id: string }>(
-      "/zoho/expenses",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
-  } catch (err) {
-    throw err;
-  }
+  return request("/zoho/expenses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 }
 
-/** GET /evaluation */
 export async function fetchEvaluation(): Promise<ModelAccuracy[]> {
-
-  try {
-    return await request<ModelAccuracy[]>("/evaluation");
-  } catch (err) {
-    throw err;
-  }
+  return request<ModelAccuracy[]>("/evaluation");
 }

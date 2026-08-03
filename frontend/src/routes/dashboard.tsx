@@ -111,26 +111,40 @@ function Dashboard() {
   };
 
   const onZoho = async () => {
-    if (!result) return;
-    setZohoLoading(true);
-    try {
-      await createZohoExpense(result);
-      setZohoDone(true);
-    } finally {
-      setZohoLoading(false);
-    }
-  };
+  if (!result) return;
+
+  setZohoLoading(true);
+
+  try {
+    await createZohoExpense(result);
+    setZohoDone(true);
+    setError(null);
+  } catch (e) {
+    setError(
+      e instanceof Error
+        ? e.message
+        : "Failed to create Zoho expense."
+    );
+  } finally {
+    setZohoLoading(false);
+  }
+};
 
   const fields: [string, string][] = result
-    ? [
-        ["Vendor", result.vendor],
-        ["Bill Number", result.bill_number],
-        ["Date", result.date],
-        ["Amount", result.amount.toLocaleString()],
-        ["Currency", result.currency],
-        ["GST", result.gst.toLocaleString()],
-      ]
-    : [];
+  ? [
+      ["Vendor", result.vendor ?? "-"],
+      ["Bill Number", result.bill_number ?? "-"],
+      ["Date", result.date ?? "-"],
+      [
+        "Amount",
+        result.amount != null
+          ? result.amount.toLocaleString("en-IN")
+          : "-"
+      ],
+      ["Currency", result.currency ?? "INR"],
+      ["GST", result.gst ?? "-"],
+    ]
+  : [];
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-14">
