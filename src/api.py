@@ -95,11 +95,11 @@ async def create_expense(expense: ExpenseData):
 
         client = ZohoBooksClient()
 
-        client.create_expense(expense)
+        result = client.create_expense(expense)
 
         return {
             "success": True,
-            "expense_id": expense.bill_number,
+            "expense_id": result["expense"]["expense_id"],
             "message": "Expense successfully created.",
         }
 

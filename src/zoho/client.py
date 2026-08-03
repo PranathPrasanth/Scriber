@@ -1,3 +1,5 @@
+from urllib import response
+
 import requests
 
 from src.config import (
@@ -49,5 +51,5 @@ class ZohoBooksClient:
             json=payload,
         )
 
-        print(response.status_code)
-        print(response.text)
+        response.raise_for_status()
+        return response.json()
