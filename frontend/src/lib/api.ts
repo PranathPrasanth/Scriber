@@ -32,19 +32,9 @@ export async function extractReceipt(file: File, model: ModelId): Promise<Extrac
   form.append("model", model);
   try {
     return await request<ExtractionResult>("/extract", { method: "POST", body: form });
-  } catch {
-    // Backend not reachable yet — return a representative sample so the UI stays usable.
-    await new Promise((r) => setTimeout(r, 1200));
-    return {
-      vendor: "Sri Balaji Traders",
-      bill_number: "INV-2291",
-      date: "2026-07-18",
-      amount: 4820.5,
-      currency: "INR",
-      gst: 867.69,
-    };
-  }
-}
+  } } catch (err) {
+      throw err;
+      }
 
 /** POST /zoho/expenses — creates the expense in Zoho Books. */
 export async function createZohoExpense(data: ExtractionResult): Promise<{ expense_id: string }> {
@@ -54,39 +44,14 @@ export async function createZohoExpense(data: ExtractionResult): Promise<{ expen
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-  } catch {
-    await new Promise((r) => setTimeout(r, 1000));
-    return { expense_id: "EXP-000184" };
-  }
-}
+  } } catch (err) {
+      throw err;
+    }
 
 /** GET /evaluation — per-model accuracy metrics. */
 export async function fetchEvaluation(): Promise<ModelAccuracy[]> {
   try {
     return await request<ModelAccuracy[]>("/evaluation");
-  } catch {
-    return [
-      {
-        model: "gemini",
-        name: "Gemini",
-        overall_accuracy: 94.6,
-        bills_evaluated: 240,
-        success_rate: 98.3,
-      },
-      {
-        model: "gemma",
-        name: "Gemma",
-        overall_accuracy: 87.2,
-        bills_evaluated: 240,
-        success_rate: 93.8,
-      },
-      {
-        model: "nemotron",
-        name: "Nemotron",
-        overall_accuracy: 82.5,
-        bills_evaluated: 240,
-        success_rate: 90.4,
-      },
-    ];
-  }
-}
+  } } catch (err) {
+      throw err;
+    }
