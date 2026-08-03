@@ -1,5 +1,30 @@
+# Virtual environments
 .venv/
 .venv-1/
+.venv-3/
+
+# Environment variables
 .env
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Uploads / Generated files
+temp/
+outputs/
+reports/
+
+# Frontend
+frontend/node_modules/
+frontend/.output/
+frontend/.nitro/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
