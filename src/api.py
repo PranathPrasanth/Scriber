@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 from pathlib import Path
 import shutil
 
@@ -53,3 +56,46 @@ async def create_expense(expense: ExpenseData):
         "success": True,
         "message": "Expense successfully created."
     }
+
+@app.get("/evaluation")
+async def get_evaluation():
+
+    report_path = Path("reports/evaluation.txt")
+
+    if not report_path.exists():
+        return []
+
+    text = report_path.read_text(encoding="utf-8")
+
+    models = []
+
+    current = None
+
+    for line in text.splitlines():
+
+        line = line.strip()
+
+        if line in ["Gemini", "Gemma", "Nemotron"]:
+            current = {
+                "model": line.lower(),
+                "name": line,
+            }
+
+        elif line.startswith("Overall Accuracy"):
+            current["overall_accuracy"] = float(
+                line.split(":")[1].replace("%", "").strip()
+            )
+
+        elif line.startswith("Bills Evaluated"):
+            current["bills_evaluated"] = int(
+                line.split(":")[1].split("/")[0].strip()
+            )
+
+        elif line.startswith("Success Rate"):
+            current["success_rate"] = float(
+                line.split(":")[1].replace("%", "").strip()
+            )
+
+            models.append(current)
+
+    return models
